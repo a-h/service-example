@@ -4,12 +4,13 @@ import datetime
 import time
 from pymongo.errors import AutoReconnect
 from pymongo import MongoClient, WriteConcern
-from flask import Flask
+from flask import Flask, Response, request
 from queue import Queue, Empty
 import threading
 from servicestatus import Status, ServiceStatus
 import logging
 import jsonpickle
+import urllib.request
 
 _status_lock = threading.Lock()
 _app = Flask(__name__)
@@ -30,21 +31,52 @@ def main():
     print("Starting import")
     client = MongoClient("mongodb://localhost/establishments", j=True)
     db = client.establishments
-    batch_size = 10
+    batch_size = 100
     import_thread = threading.Thread(target=database_import,
                                      args=(file_name, db, batch_size))
     import_thread.start()
 
     print("Running web server")
-    #log = logging.getLogger('werkzeug')
-    #log.setLevel(logging.ERROR)
-    _app.run()
+    # Disable logging to the console, we don't care about HTTP requests to
+    # the monitoring service.
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+
+    server = threading.Thread(target=run_server)
+    server.start()
+
+    # Wait for the import to finish.
+    print("Waiting for import to complete.")
+    import_thread.join()
+
+    # Then shut everything down.
+    print("Waiting for server to shut down.")
+    urllib.request.urlopen("http://localhost:5000/shutdown").read()
+    server.join()
+    print("Process complete.")
+
+
+def shutdown_server():
+    if not 'werkzeug.server.shutdown' in request.environ:
+        raise RuntimeError('Not running the development server')
+    request.environ['werkzeug.server.shutdown']()
+
+
+def run_server():
+    _app.run(debug=False, use_reloader=False)
+
+
+@_app.route('/shutdown')
+def shutdown():
+    shutdown_server()
+    return 'Server shutting down...'
 
 
 @_app.route('/status')
 def status():
     with _status_lock:
-        return jsonpickle.encode(_status, unpicklable=False)
+        json = jsonpickle.encode(_status, unpicklable=False)
+        return Response(json, mimetype='application/json')
 
 
 def fake_import():
@@ -64,6 +96,9 @@ def database_import(file_name, db, batch_size = 10):
 def import_to_mongo(db, input_lines, batch_size):
     start = datetime.datetime.now()
 
+    with _status_lock:
+        _status.update(status=Status.running)
+
     idx = 0
     # Read the lines in as batches
     for lines in extract_slices(input_lines, batch_size):
@@ -77,6 +112,9 @@ def import_to_mongo(db, input_lines, batch_size):
                 db.establishments.insert_many(establishments)
                 break
             except AutoReconnect:
+                with _status_lock:
+                    _status.update(status=Status.running,
+                                   operations_failed=1)
                 print("Sleeping while a new primary is elected.")
                 time.sleep(pow(2, i))
 
@@ -86,11 +124,20 @@ def import_to_mongo(db, input_lines, batch_size):
         minutes = seconds / 60
         records_per_second = record_count / seconds
 
+        with _status_lock:
+            _status.update(status=Status.running,
+                           operations_successful=len(lines))
+
         if idx == 0 or idx % 100 == 0:
             print(str.format("Inserted {0} records in {1} minutes - averaging at {2} per second", record_count,
                              int(minutes), int(records_per_second)))
 
-        idx += 1
+        idx += len(lines)
+
+    with _status_lock:
+        _status.update(status=Status.not_started)
+
+    print(str.format("Complete."))
 
 
 def extract_slices(iterable, batch_size):

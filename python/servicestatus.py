@@ -22,7 +22,7 @@ class ServiceStatus:
         self.exceptions = exceptions
 
 
-    def update(self, status, operations_successful, operations_failed):
+    def update(self, status, operations_successful = 0, operations_failed = 0):
         self.status = status
         self.operations += operations_successful
         self.exceptions += operations_failed
