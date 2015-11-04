@@ -28,8 +28,11 @@ def main():
     # and the Web server.
 
     print("Starting import")
-    #import_to_mongo(file_name)
-    import_thread = threading.Thread(target=fake_import)
+    client = MongoClient("mongodb://localhost/establishments", j=True)
+    db = client.establishments
+    batch_size = 10
+    import_thread = threading.Thread(target=database_import,
+                                     args=(file_name, db, batch_size))
     import_thread.start()
 
     print("Running web server")
@@ -47,38 +50,37 @@ def status():
 def fake_import():
     while True:
         with _status_lock:
-            _status.update(status=Status.running, operations_successful=1, operations_failed=0)
+            _status.update(status=Status.running, operations_successful=1,
+                           operations_failed=0)
 
         time.sleep(1)
 
 
-def import_to_mongo(file_name):
-    db_name = "establishments"
-    client = MongoClient("mongodb://food_standards:123456@mongo1:27017,mongo2:27017,mongo3:27017/" + db_name + "?replicaSet="
-                         "mongo_replication&authMechanism=SCRAM-SHA-1", w=3, j=True)
+def database_import(file_name, db, batch_size = 10):
+    import_to_mongo(db=db, input_lines=open(file_name, "r"),
+                    batch_size=batch_size)
 
-    db = client.establishments
 
-    # use establishments
-    # db.createUser({ user: "food_standards", pwd: "123456", roles: [ "readWrite" ] })
-
+def import_to_mongo(db, input_lines, batch_size):
     start = datetime.datetime.now()
 
     idx = 0
-    for line in open(file_name, "r"):
-        j = json.loads(line)
+    # Read the lines in as batches
+    for lines in extract_slices(input_lines, batch_size):
+        # Convert each line to JSON
+        establishments = [json.loads(line) for line in lines]
 
         # Retry behaviour for insert operation, see
         # http://www.arngarden.com/2013/04/29/handling-mongodb-autoreconnect-exceptions-in-python-using-a-proxy/
         for i in range(5):
             try:
-                db.establishments.insert(j)
+                db.establishments.insert_many(establishments)
                 break
             except AutoReconnect:
                 print("Sleeping while a new primary is elected.")
                 time.sleep(pow(2, i))
 
-        record_count = idx + 1
+        record_count = idx + len(lines)
         time_diff = (datetime.datetime.now() - start)
         seconds = time_diff.total_seconds()
         minutes = seconds / 60
@@ -89,6 +91,20 @@ def import_to_mongo(file_name):
                              int(minutes), int(records_per_second)))
 
         idx += 1
+
+
+def extract_slices(iterable, batch_size):
+    cache = []
+
+    for value in iterable:
+        cache.append(value)
+
+        if len(cache) == batch_size:
+            yield cache
+            cache = []
+
+    if len(cache) > 0:
+        yield cache
 
 
 if __name__ == "__main__":
