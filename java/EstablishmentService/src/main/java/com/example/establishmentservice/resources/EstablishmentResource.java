@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
 import com.codahale.metrics.annotation.Timed;
+import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -16,10 +17,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.io.Closeable;
 import java.io.IOException;
@@ -40,30 +38,40 @@ public class EstablishmentResource implements Closeable {
     }
 
     @GET
+    @Path("/{id}")
+    public Establishment find(@PathParam("id") String id) {
+        MongoDatabase database = client.getDatabase("establishments");
+        MongoCollection<Document> establishmentsCollection = database.getCollection("establishments");
+        BasicDBObject query = new BasicDBObject("_id", new ObjectId(id));
+
+        Document d = establishmentsCollection.find(query).limit(1).first();
+
+        return MapDocumentToEstablishment(d);
+    }
+
+    @GET
     @Timed
     @Produces(MediaType.APPLICATION_JSON)
-    public ArrayList<Establishment> get(@QueryParam("id") Optional<String> id) throws IOException {
+    @Path("/")
+    public ArrayList<Establishment> list() throws IOException {
         ArrayList<Establishment> results = new ArrayList<Establishment>();
 
-        if (id.isPresent()) {
-            Establishment e = new Establishment();
-            e.setId("123");
-            e.setBusinessName("Red Chilli");
-            results.add(e);
-        } else {
-            MongoDatabase database = client.getDatabase("establishments");
-            MongoCollection<Document> establishmentsCollection = database.getCollection("establishments");
+        MongoDatabase database = client.getDatabase("establishments");
+        MongoCollection<Document> establishmentsCollection = database.getCollection("establishments");
 
-            for (Document d : establishmentsCollection.find().limit(this.maximumResults)) {
-                Establishment e = new Establishment();
-                // e.setId(d.getObjectId("Id").toString());
-                e.setBusinessName(d.getString("BusinessName"));
-
-                results.add(e);
-            }
+        for (Document d : establishmentsCollection.find().limit(this.maximumResults)) {
+            results.add(MapDocumentToEstablishment(d));
         }
 
         return results;
+    }
+
+
+    private Establishment MapDocumentToEstablishment(Document d) {
+        Establishment e = new Establishment();
+        e.setId(d.getObjectId("_id").toString());
+        e.setBusinessName(d.getString("BusinessName"));
+        return e;
     }
 
     public void close() throws IOException {
