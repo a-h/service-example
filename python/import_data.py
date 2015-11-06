@@ -118,6 +118,7 @@ def import_to_mongo(db, input_lines, batch_size):
                 print("Sleeping while a new primary is elected.")
                 time.sleep(pow(2, i))
 
+        # Prepare statistics on the import process.
         record_count = idx + len(lines)
         time_diff = (datetime.datetime.now() - start)
         seconds = time_diff.total_seconds()
@@ -129,11 +130,13 @@ def import_to_mongo(db, input_lines, batch_size):
                            operations_successful=len(lines))
 
         if idx == 0 or idx % 100 == 0:
-            print(str.format("Inserted {0} records in {1} minutes - averaging at {2} per second", record_count,
+            print(str.format("Inserted {0} records in {1} minutes - averaging "
+                             "at {2} per second", record_count,
                              int(minutes), int(records_per_second)))
 
         idx += len(lines)
 
+    # Update the status to show that we've finished.
     with _status_lock:
         _status.update(status=Status.not_started)
 
