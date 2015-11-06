@@ -59,6 +59,11 @@ python3 import_data.py
 python3 app.py
 ```
 
+To test it:
+
+ * ``` http://localhost:8888/establishment/563a13a2edf60c2478052035```
+ * ``` http://localhost:8888/establishment/```
+
 # Running Test Cases
 
 Run the tests:
