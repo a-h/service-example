@@ -7,7 +7,7 @@ import io.dropwizard.setup.Environment;
 import com.example.establishmentservice.resources.EstablishmentResource;
 import com.example.establishmentservice.health.MongoDBHealthCheck;
 
-public class EstablishmentServiceApplication extends Application<EstablishmentServiceServiceConfiguration> {
+public class EstablishmentServiceApplication extends Application<EstablishmentServiceConfiguration> {
     public static void main(String[] args) throws Exception {
         new EstablishmentServiceApplication().run(args);
     }
@@ -18,12 +18,12 @@ public class EstablishmentServiceApplication extends Application<EstablishmentSe
     }
 
     @Override
-    public void initialize(Bootstrap<EstablishmentServiceServiceConfiguration> bootstrap) {
+    public void initialize(Bootstrap<EstablishmentServiceConfiguration> bootstrap) {
         // nothing to do yet
     }
 
     @Override
-    public void run(EstablishmentServiceServiceConfiguration configuration,
+    public void run(EstablishmentServiceConfiguration configuration,
                     Environment environment) {
         // TODO: Pass configuration parameters to the resource.
         System.out.println(configuration.getMaximumEstablishments());

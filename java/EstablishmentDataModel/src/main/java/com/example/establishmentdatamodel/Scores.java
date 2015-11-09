@@ -1,4 +1,4 @@
-package com.example.establishmentservice.api;
+package com.example.establishmentdatamodel;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,18 +1,12 @@
 package com.example.establishmentservice.resources;
 
-import com.example.establishmentservice.api.Establishment;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.codahale.metrics.annotation.Timed;
+import com.example.establishmentdatamodel.Establishment;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
-import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,8 +16,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Path("/establishment")
 @Produces(MediaType.APPLICATION_JSON)
@@ -40,6 +32,8 @@ public class EstablishmentResource implements Closeable {
     @GET
     @Path("/{id}")
     public Establishment find(@PathParam("id") String id) {
+        logger.debug("Searching for an establishment by Id {0}", id);
+
         MongoDatabase database = client.getDatabase("establishments");
         MongoCollection<Document> establishmentsCollection = database.getCollection("establishments");
         BasicDBObject query = new BasicDBObject("_id", new ObjectId(id));
@@ -54,6 +48,8 @@ public class EstablishmentResource implements Closeable {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/")
     public ArrayList<Establishment> list() throws IOException {
+        logger.debug("Listing establishments");
+
         ArrayList<Establishment> results = new ArrayList<Establishment>();
 
         MongoDatabase database = client.getDatabase("establishments");

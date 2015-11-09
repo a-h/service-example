@@ -1,4 +1,4 @@
-package com.example.establishmentservice.api;
+package com.example.establishmentdatamodel;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class Establishment {
     @JsonProperty("_id")
     private String Id;
     @JsonProperty("Scores")
-    private com.example.establishmentservice.api.Scores Scores;
+    private Scores Scores;
     @JsonProperty("AddressLine2")
     private String AddressLine2;
     @JsonProperty("SchemeType")
@@ -61,7 +61,7 @@ public class Establishment {
     @JsonProperty("BusinessType")
     private String BusinessType;
     @JsonProperty("FHRSID")
-    private Integer FHRSID;
+    private String FHRSID;
     @JsonProperty("LocalAuthorityBusinessID")
     private String LocalAuthorityBusinessID;
     @JsonProperty("LocalAuthorityCode")
@@ -73,9 +73,9 @@ public class Establishment {
     @JsonProperty("BusinessName")
     private String BusinessName;
     @JsonProperty("RatingValue")
-    private Integer RatingValue;
+    private String RatingValue;
     @JsonProperty("Geocode")
-    private com.example.establishmentservice.api.Geocode Geocode;
+    private Geocode Geocode;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -105,7 +105,7 @@ public class Establishment {
      * The Scores
      */
     @JsonProperty("Scores")
-    public com.example.establishmentservice.api.Scores getScores() {
+    public Scores getScores() {
         return Scores;
     }
 
@@ -115,7 +115,7 @@ public class Establishment {
      * The Scores
      */
     @JsonProperty("Scores")
-    public void setScores(com.example.establishmentservice.api.Scores Scores) {
+    public void setScores(Scores Scores) {
         this.Scores = Scores;
     }
 
@@ -325,7 +325,7 @@ public class Establishment {
      * The FHRSID
      */
     @JsonProperty("FHRSID")
-    public Integer getFHRSID() {
+    public String getFHRSID() {
         return FHRSID;
     }
 
@@ -335,7 +335,7 @@ public class Establishment {
      * The FHRSID
      */
     @JsonProperty("FHRSID")
-    public void setFHRSID(Integer FHRSID) {
+    public void setFHRSID(String FHRSID) {
         this.FHRSID = FHRSID;
     }
 
@@ -445,7 +445,7 @@ public class Establishment {
      * The RatingValue
      */
     @JsonProperty("RatingValue")
-    public Integer getRatingValue() {
+    public String getRatingValue() {
         return RatingValue;
     }
 
@@ -455,7 +455,7 @@ public class Establishment {
      * The RatingValue
      */
     @JsonProperty("RatingValue")
-    public void setRatingValue(Integer RatingValue) {
+    public void setRatingValue(String RatingValue) {
         this.RatingValue = RatingValue;
     }
 
@@ -465,7 +465,7 @@ public class Establishment {
      * The Geocode
      */
     @JsonProperty("Geocode")
-    public com.example.establishmentservice.api.Geocode getGeocode() {
+    public Geocode getGeocode() {
         return Geocode;
     }
 
@@ -475,7 +475,7 @@ public class Establishment {
      * The Geocode
      */
     @JsonProperty("Geocode")
-    public void setGeocode(com.example.establishmentservice.api.Geocode Geocode) {
+    public void setGeocode(Geocode Geocode) {
         this.Geocode = Geocode;
     }
 

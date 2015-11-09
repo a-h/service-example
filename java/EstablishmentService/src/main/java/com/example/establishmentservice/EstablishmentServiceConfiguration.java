@@ -4,7 +4,7 @@ import io.dropwizard.Configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.validator.constraints.NotEmpty;
 
-public class EstablishmentServiceServiceConfiguration extends Configuration {
+public class EstablishmentServiceConfiguration extends Configuration {
     @JsonProperty("mongodbConnectionString")
     private String mongodbConnectionString;
 
