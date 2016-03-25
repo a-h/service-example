@@ -5,8 +5,8 @@ from tornado import gen
 
 
 class EstablishmentRepository:
-    def __init__(self):
-        self.client = MotorClient()
+    def __init__(self, uri="mongodb://localhost:27017"):
+        self.client = MotorClient(host=uri)
 
     @gen.coroutine
     def list_establishments(self):

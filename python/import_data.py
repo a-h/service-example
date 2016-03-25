@@ -17,6 +17,7 @@ _app = Flask(__name__)
 _status = ServiceStatus(status=Status.not_started, operations=0, exceptions=0)
 _start_time = datetime.datetime.now()
 
+_uri = "mongodb://localhost:27017"
 
 def main():
     file_name = "../data.json"
@@ -29,7 +30,7 @@ def main():
     # and the Web server.
 
     print("Starting import")
-    client = MongoClient("mongodb://localhost/establishments", j=True)
+    client = MongoClient(_uri, j=True)
     db = client.establishments
     batch_size = 100
     import_thread = threading.Thread(target=database_import,
@@ -158,4 +159,7 @@ def extract_slices(iterable, batch_size):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        _uri = sys.argv[1]
+
     main()
