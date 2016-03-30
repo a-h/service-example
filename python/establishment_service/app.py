@@ -1,3 +1,4 @@
+import sys
 from tornado.ioloop import IOLoop
 from tornado.web import Application, url
 from establishment_handler import EstablishmentHandler
@@ -18,7 +19,7 @@ def get_handlers():
 
 def main():
     app = make_app()
-    app.listen(8888)
+    app.listen(8080)
     IOLoop.current().start()
 
 
