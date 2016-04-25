@@ -1,10 +1,9 @@
 tornado
-pymongo
+pymongo==2.8
 flask
 psutil
 jsonpickle
 pytest
 coverage
-tornado
 motor
 pytest-cov
